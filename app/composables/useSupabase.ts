@@ -1,13 +1,16 @@
-// import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-// const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL
-// const supabaseKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY
+let supabase: ReturnType<typeof createClient> | null = null;
 
-// let supabase:SupabaseClient<any, "public", any>
+export const useSupabase = () => {
+  const config = useRuntimeConfig();
 
-// export const useSupabase = () => {
-//   if (!supabase) {
-//     supabase = createClient(supabaseUrl as string, supabaseKey as string)
-//   }
-//   return supabase
-// }
+  if (!supabase) {
+    supabase = createClient(
+      config.public.supabaseUrl,
+      config.public.supabaseAnonKey
+    );
+  }
+
+  return supabase;
+};

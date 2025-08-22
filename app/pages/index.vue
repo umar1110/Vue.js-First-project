@@ -1,3 +1,3 @@
 <template>
-  <h1>Index page</h1>
+  <h1 class="text-3xl font-bold">Index page</h1>
 </template>
