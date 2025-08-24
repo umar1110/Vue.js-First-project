@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import Hero from "~/components/home/Hero.vue";
+</script>
+
 <template>
-  <h1 class="text-3xl font-bold">Index page</h1>
+  <Hero />
 </template>

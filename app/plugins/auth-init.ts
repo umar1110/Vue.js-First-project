@@ -1,13 +1,9 @@
-// // plugins/auth-init.ts
-// import { useAuthStore } from "~/stores/auth.store";
+// plugins/auth.client.ts
+import { useAuthStore } from "~/stores/auth.store";
 
-// export default defineNuxtPlugin(async () => {
-//   const authStore = useAuthStore();
-//   if (authStore.loading) {
-//       authStore.init().catch((error) => {
-//           console.error("Error initializing auth store:", error);
-//       }).then(() => {
-//           console.log("auth init completed");
-//       });
-//   }
-// });
+export default defineNuxtPlugin(async (nuxtApp) => {
+  const authStore = useAuthStore();
+
+  // only run once
+  await authStore.init();
+});

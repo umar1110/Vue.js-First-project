@@ -23,4 +23,5 @@ logs
 .env.*
 !.env.example
 
+volumes
 /app/generated/prisma

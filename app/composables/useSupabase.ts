@@ -8,8 +8,9 @@ export const useSupabase = () => {
   if (!supabase) {
     supabase = createClient(
       config.public.supabaseUrl,
-      config.public.supabaseAnonKey
+      config.public.supabasekey
     );
+    
   }
 
   return supabase;
