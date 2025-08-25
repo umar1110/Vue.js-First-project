@@ -10,5 +10,4 @@ definePageMeta({
 
 const authStore = useAuthStore();
 const { isAuthenticated, loading } = storeToRefs(authStore);
-
 </script>
