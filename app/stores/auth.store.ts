@@ -1,4 +1,3 @@
-// stores/auth.store.ts
 import { defineStore } from "pinia";
 import type { AuthType } from "~/types/auth.types";
 
@@ -19,25 +18,51 @@ export const useAuthStore = defineStore("auth", {
 
   actions: {
     async init() {
-      console.log("Initializing")
-      const supabase = useSupabase();
-      const { data } = await supabase.auth.getSession();
+      console.log("Initializing auth store");
+      const supabase = useSupabaseClient(); // Use Nuxt Supabase client
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error fetching session:", error.message);
+          this.errorMessage = error.message;
+          this.loading = false;
+          return;
+        }
 
-      if (data.session?.user) {
-        this.setUser({
-          id: data.session.user.id,
-          name: data.session.user.user_metadata?.name || "",
-          email: data.session.user.email || "",
-          role: data.session.user.user_metadata?.role || "employee",
-          avatar: data.session.user.user_metadata?.avatar || "",
-        });
-        this.isAuthenticated = true;
-        this.accessToken = data.session.access_token;
+        console.log("Session data:", data);
+
+        if (data.session?.user) {
+          this.setUser({
+            id: data.session.user.id,
+            name: data.session.user.user_metadata?.name || "",
+            email: data.session.user.email || "",
+            role: data.session.user.user_metadata?.role || "employee",
+            avatar: data.session.user.user_metadata?.avatar || "",
+          });
+          this.isAuthenticated = true;
+          this.accessToken = data.session.access_token;
+        } else {
+          this.setUser({
+            id: null,
+            name: "",
+            email: "",
+            role: "employee",
+            avatar: "",
+          });
+          this.isAuthenticated = false;
+          this.accessToken = null;
+        }
+      } catch (error: any) {
+        console.error("Init error:", error.message);
+        this.errorMessage = error.message;
+      } finally {
+        this.loading = false;
       }
-      this.loading = false;
 
-      // listen for changes (login, logout, refresh)
+      // Listen for auth state changes (client-side only)
+      if (!process.client) return;
       supabase.auth.onAuthStateChange((event, session) => {
+        console.log("Auth state changed:", event, session);
         if (session?.user) {
           this.setUser({
             id: session.user.id,
@@ -59,11 +84,32 @@ export const useAuthStore = defineStore("auth", {
           this.isAuthenticated = false;
           this.accessToken = null;
         }
-
-        this.loading = false;
       });
     },
-
+    async signInWithGoogle() {
+      this.loading = true;
+      this.errorMessage = null;
+      try {
+        const supabase = useSupabaseClient();
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: "http://localhost:3000/auth/callback",
+            queryParams: {
+              access_type: "offline",
+              prompt: "consent",
+            },
+          },
+        });
+        if (error) throw error;
+      } catch (err: any) {
+        this.errorMessage = err.message;
+        this.isAuthenticated = false;
+        this.user = null;
+      } finally {
+        this.loading = false;
+      }
+    },
     clearErrors() {
       this.errorMessage = null;
     },
@@ -88,27 +134,21 @@ export const useAuthStore = defineStore("auth", {
     ) {
       this.loading = true;
       try {
-        const supabase = useSupabase();
-        if (!supabase) {
-          this.errorMessage = "Supabase client is not initialized.";
-          return;
-        }
-
+        const supabase = useSupabaseClient();
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { role, name }, // stored in user metadata
+            data: { role, name }, // Store in user_metadata
           },
         });
 
-        console.log("Sign Up Data", data);
+        console.log("Sign Up Data:", data);
         if (error) {
+          console.error("Sign Up Error:", error.message);
           this.errorMessage = error.message;
           return;
         }
-
-        console.log("User signed Up", data.user);
 
         if (data.user) {
           this.setUser({
@@ -130,26 +170,17 @@ export const useAuthStore = defineStore("auth", {
     async login(email: string, password: string) {
       this.loading = true;
       try {
-        const supabase = useSupabase();
-        if (!supabase) {
-          this.errorMessage = "Supabase client is not initialized.";
-          this.loading = false;
-          return {
-            success: false,
-          };
-        }
-
+        const supabase = useSupabaseClient();
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
+          console.error("Login Error:", error.message);
           this.errorMessage = error.message;
           this.loading = false;
-          return {
-            success: false,
-          };
+          return { success: false };
         }
 
         if (data.user) {
@@ -164,26 +195,20 @@ export const useAuthStore = defineStore("auth", {
           this.loading = false;
         }
 
-        return {
-          success: true,
-        };
+        return { success: true };
       } catch (error: any) {
+        console.error("Login Catch Error:", error.message);
         this.errorMessage = error.message;
-        return {
-          success: false,
-        };
+        this.loading = false;
+        return { success: false };
       }
     },
 
     async logout() {
-      const supabase = useSupabase();
-      if (!supabase) {
-        this.errorMessage = "Supabase client is not initialized.";
-        return;
-      }
-
+      const supabase = useSupabaseClient();
       const { error } = await supabase.auth.signOut();
       if (error) {
+        console.error("Logout Error:", error.message);
         this.errorMessage = error.message;
         return;
       }
@@ -195,9 +220,10 @@ export const useAuthStore = defineStore("auth", {
         id: null,
         avatar: "",
       });
+      this.setIsAuthenticated(false);
+      this.accessToken = null;
       this.loading = false;
 
-      this.setIsAuthenticated(false);
       return navigateTo("/auth/login");
     },
   },

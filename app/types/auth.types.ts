@@ -1,15 +1,13 @@
 export interface AuthType {
-  user: UserType | null;
+  user: {
+    name: string;
+    email: string;
+    role: "employee" | "admin";
+    id: string | null;
+    avatar: string;
+  } | null;
+  accessToken: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  accessToken: string | null;
-  errorMessage: null | string;
-}
-
-export interface UserType {
-  name: string;
-  email: string;
-  role: "employee" | "admin";
-  id: string | null;
-  avatar: string;
+  errorMessage: string | null;
 }

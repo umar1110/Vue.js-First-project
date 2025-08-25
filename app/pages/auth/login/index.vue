@@ -1,46 +1,4 @@
-<script setup lang="ts">
-import { NuxtLink } from "#components";
-import { storeToRefs } from "pinia";
 
-// Composables or plugins
-const router = useRouter();
-const toast = useToast();
-
-// Refs
-const email = ref<string>("");
-const password = ref<string>("");
-const auth = useAuthStore();
-const { login,clearErrors } = auth;
-const { errorMessage, isAuthenticated, loading } = storeToRefs(auth);
-
-
-// Functions
-const handleSignIn = async () => {
-  const response = await login(email.value, password.value);
-
-  if (response.success) {
-    router.push("/"); 
-    toast
-  }
-};
-
-// Watched
-watch(errorMessage, (newError) => {
-  if (newError) {
-    toast.add({
-      color: "error",
-      title: newError,
-    });
-    clearErrors();
-  }
-});
-watch(isAuthenticated, (newVal) => {
-  if (newVal) {
-    router.push("/");
-  }
-},
-{immediate: true});
-</script>
 
 <template>
   <div
@@ -75,16 +33,73 @@ watch(isAuthenticated, (newVal) => {
       >
         Login with credentials
       </button>
+      <div class="mt-6 text-center">
+        <button
+          @click="auth.signInWithGoogle"
+          class="w-full cursor-pointer bg-gray-800 text-white p-2 rounded-md hover:bg-gray-900 flex items-center justify-center gap-2"
+          :disabled="loading"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.854L12.545,10.239z"
+            />
+          </svg>
+          Sign in with Google
+        </button>
+      </div>
       <p class="text-center">
         Don't have an account?
-        <NuxtLink
-          to="/auth/signup"
-          class="text-green-500 cursor-pointer"
-        >
+        <NuxtLink to="/auth/signup" class="text-green-500 cursor-pointer">
           Sign Up
         </NuxtLink>
       </p>
     </form>
-   
   </div>
 </template>
+
+
+<script setup lang="ts">
+import { NuxtLink } from "#components";
+import { storeToRefs } from "pinia";
+
+// Composables or plugins
+const router = useRouter();
+const toast = useToast();
+
+// Refs
+const email = ref<string>("");
+const password = ref<string>("");
+const auth = useAuthStore();
+const { login, clearErrors } = auth;
+const { errorMessage, isAuthenticated, loading } = storeToRefs(auth);
+
+// Functions
+const handleSignIn = async () => {
+  const response = await login(email.value, password.value);
+
+  if (response.success) {
+    router.push("/");
+    toast;
+  }
+};
+
+// Watched
+watch(errorMessage, (newError) => {
+  if (newError) {
+    toast.add({
+      color: "error",
+      title: newError,
+    });
+    clearErrors();
+  }
+});
+watch(
+  isAuthenticated,
+  (newVal) => {
+    if (newVal) {
+      router.push("/");
+    }
+  },
+  { immediate: true }
+);
+</script>

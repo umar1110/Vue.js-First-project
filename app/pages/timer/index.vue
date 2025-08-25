@@ -7,7 +7,12 @@
 definePageMeta({
   layout: "dashboard",
 });
-
 const authStore = useAuthStore();
 const { isAuthenticated, loading } = storeToRefs(authStore);
+
+// watch(isAuthenticated, (newVal) => {
+//   if (!newVal) {
+//     navigateTo("/auth/login");
+//   }
+// },{immediate: true});
 </script>
