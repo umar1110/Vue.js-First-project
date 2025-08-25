@@ -5,7 +5,7 @@ export interface AuthType {
     role: "employee" | "admin";
     id: string | null;
     avatar: string;
-  } | null;
+  } ;
   accessToken: string | null;
   isAuthenticated: boolean;
   loading: boolean;

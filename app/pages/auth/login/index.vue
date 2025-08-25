@@ -1,5 +1,3 @@
-
-
 <template>
   <div
     class="blabla h-screen w-screen text-gray-700 bg-white flex items-center justify-center"
@@ -37,7 +35,7 @@
         <button
           @click="auth.signInWithGoogle"
           class="w-full cursor-pointer bg-gray-800 text-white p-2 rounded-md hover:bg-gray-900 flex items-center justify-center gap-2"
-          :disabled="loading"
+          :disabled="auth.loading"
         >
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
             <path
@@ -57,12 +55,11 @@
   </div>
 </template>
 
-
 <script setup lang="ts">
 import { NuxtLink } from "#components";
-import { storeToRefs } from "pinia";
+import { useRouter, useToast } from "#imports";
 
-// Composables or plugins
+// Composables
 const router = useRouter();
 const toast = useToast();
 
@@ -71,30 +68,31 @@ const email = ref<string>("");
 const password = ref<string>("");
 const auth = useAuthStore();
 const { login, clearErrors } = auth;
-const { errorMessage, isAuthenticated, loading } = storeToRefs(auth);
 
 // Functions
 const handleSignIn = async () => {
   const response = await login(email.value, password.value);
-
   if (response.success) {
     router.push("/");
-    toast;
+    toast.add({ color: "success", title: "Logged in successfully" });
   }
 };
 
-// Watched
-watch(errorMessage, (newError) => {
-  if (newError) {
-    toast.add({
-      color: "error",
-      title: newError,
-    });
-    clearErrors();
-  }
-});
+// Watchers
 watch(
-  isAuthenticated,
+  () => auth.errorMessage,
+  (newError) => {
+    if (newError) {
+      toast.add({
+        color: "error",
+        title: newError,
+      });
+      clearErrors();
+    }
+  }
+);
+watch(
+  () => auth.isAuthenticated,
   (newVal) => {
     if (newVal) {
       router.push("/");

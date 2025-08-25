@@ -1,47 +1,3 @@
-<script setup lang="ts">
-import { NuxtLink } from "#components";
-import { storeToRefs } from "pinia";
-
-// Composables or plugins
-const router = useRouter();
-const toast = useToast();
-// Refs
-const email = ref<string>("");
-const password = ref<string>("");
-const name = ref<string>("");
-const auth = useAuthStore();
-const { signUp, clearErrors } = auth;
-const { errorMessage, isAuthenticated, loading } = storeToRefs(auth);
-
-
-// Functions
-const handleSignUp = async () => {
-  await signUp(name.value, email.value, password.value, "employee");
-};
-
-// Watches
-watch(errorMessage, (newError) => {
-  if (newError) {
-    toast.add({
-      color: "error",
-      title: newError,
-    });
-    clearErrors();
-  }
-});
-watch(isAuthenticated, (newVal) => {
-  if (newVal) {
-    toast.add({
-      color: "success",
-      title: "Registration successful!",
-    });
-    router.push("/");
-  }
-},{immediate: true});
-
-
-</script>
-
 <template>
   <div
     class="blabla h-screen w-screen text-gray-700 bg-white flex items-center justify-center"
@@ -75,10 +31,14 @@ watch(isAuthenticated, (newVal) => {
         id="password"
         v-model="password"
       />
-      <!-- Make it type submit -->
-      <button type="submit" class="rounded-2xl py-4 px-32 w-full bg-green-300">
+      <button
+        type="submit"
+        class="rounded-2xl py-4 px-32 w-full bg-green-300"
+        :disabled="loading"
+      >
         Sign Up
       </button>
+      <!-- <p v-if="errorMessage" class="text-center text-red-500">{{ errorMessage }}</p> -->
       <p class="text-center">
         Already have an account?
         <NuxtLink to="/auth/login" class="text-green-500 cursor-pointer">
@@ -88,3 +48,46 @@ watch(isAuthenticated, (newVal) => {
     </form>
   </div>
 </template>
+
+<script setup lang="ts">
+import { NuxtLink } from "#components";
+import { useRouter, useToast } from "#imports";
+import { storeToRefs } from "pinia";
+
+// Composables
+const router = useRouter();
+const toast = useToast();
+
+// Refs
+const email = ref<string>("");
+const password = ref<string>("");
+const name = ref<string>("");
+const auth = useAuthStore();
+const { signUp, clearErrors } = auth;
+const { errorMessage, isAuthenticated, loading } = storeToRefs(auth);
+
+// Functions
+const handleSignUp = async () => {
+  await signUp(name.value, email.value, password.value, "employee");
+};
+
+// Watches
+watch(errorMessage, (newError) => {
+  if (newError) {
+    toast.add({
+      color: "error",
+      title: newError,
+    });
+    clearErrors();
+  }
+});
+watch(isAuthenticated, (newVal) => {
+  if (newVal) {
+    toast.add({
+      color: "success",
+      title: "Registration successful!",
+    });
+    router.push("/");
+  }
+}, { immediate: true });
+</script>

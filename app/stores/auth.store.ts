@@ -1,230 +1,253 @@
 import { defineStore } from "pinia";
+import { ref, reactive } from "vue";
+import { useSupabaseClient } from "#imports";
 import type { AuthType } from "~/types/auth.types";
 
-export const useAuthStore = defineStore("auth", {
-  state: (): AuthType => ({
-    user: {
-      name: "",
-      email: "",
-      role: "employee",
-      id: null,
-      avatar: "",
-    },
-    accessToken: null,
-    isAuthenticated: false,
-    loading: true,
-    errorMessage: null,
-  }),
+export const useAuthStore = defineStore("auth", () => {
+  const user = reactive<AuthType["user"]>({
+    name: "",
+    email: "",
+    role: "employee",
+    id: null,
+    avatar: "",
+  });
+  const accessToken = ref<string | null>(null);
+  const isAuthenticated = ref(false);
+  const loading = ref(true);
+  const errorMessage = ref<string | null>(null);
+  const supabase = useSupabaseClient();
 
-  actions: {
-    async init() {
-      console.log("Initializing auth store");
-      const supabase = useSupabaseClient(); // Use Nuxt Supabase client
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Error fetching session:", error.message);
-          this.errorMessage = error.message;
-          this.loading = false;
-          return;
-        }
-
-        console.log("Session data:", data);
-
-        if (data.session?.user) {
-          this.setUser({
-            id: data.session.user.id,
-            name: data.session.user.user_metadata?.name || "",
-            email: data.session.user.email || "",
-            role: data.session.user.user_metadata?.role || "employee",
-            avatar: data.session.user.user_metadata?.avatar || "",
-          });
-          this.isAuthenticated = true;
-          this.accessToken = data.session.access_token;
-        } else {
-          this.setUser({
-            id: null,
-            name: "",
-            email: "",
-            role: "employee",
-            avatar: "",
-          });
-          this.isAuthenticated = false;
-          this.accessToken = null;
-        }
-      } catch (error: any) {
-        console.error("Init error:", error.message);
-        this.errorMessage = error.message;
-      } finally {
-        this.loading = false;
-      }
-
-      // Listen for auth state changes (client-side only)
-      if (!process.client) return;
-      supabase.auth.onAuthStateChange((event, session) => {
-        console.log("Auth state changed:", event, session);
-        if (session?.user) {
-          this.setUser({
-            id: session.user.id,
-            name: session.user.user_metadata?.name || "",
-            email: session.user.email || "",
-            role: session.user.user_metadata?.role || "employee",
-            avatar: session.user.user_metadata?.avatar || "",
-          });
-          this.isAuthenticated = true;
-          this.accessToken = session.access_token;
-        } else {
-          this.setUser({
-            id: null,
-            name: "",
-            email: "",
-            role: "employee",
-            avatar: "",
-          });
-          this.isAuthenticated = false;
-          this.accessToken = null;
-        }
-      });
-    },
-    async signInWithGoogle() {
-      this.loading = true;
-      this.errorMessage = null;
-      try {
-        const supabase = useSupabaseClient();
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: "http://localhost:3000/auth/callback",
-            queryParams: {
-              access_type: "offline",
-              prompt: "consent",
-            },
-          },
-        });
-        if (error) throw error;
-      } catch (err: any) {
-        this.errorMessage = err.message;
-        this.isAuthenticated = false;
-        this.user = null;
-      } finally {
-        this.loading = false;
-      }
-    },
-    clearErrors() {
-      this.errorMessage = null;
-    },
-
-    setUser(user: AuthType["user"]) {
-      this.user = user;
-    },
-
-    setIsAuthenticated(isAuthenticated: boolean) {
-      this.isAuthenticated = isAuthenticated;
-    },
-
-    setLoading(loading: boolean) {
-      this.loading = loading;
-    },
-
-    async signUp(
-      name: string,
-      email: string,
-      password: string,
-      role: "employee" | "admin" = "employee"
-    ) {
-      this.loading = true;
-      try {
-        const supabase = useSupabaseClient();
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { role, name }, // Store in user_metadata
-          },
-        });
-
-        console.log("Sign Up Data:", data);
-        if (error) {
-          console.error("Sign Up Error:", error.message);
-          this.errorMessage = error.message;
-          return;
-        }
-
-        if (data.user) {
-          this.setUser({
-            id: data.user.id,
-            name: data.user.user_metadata?.name || "",
-            email: data.user.email || "",
-            role: data.user.user_metadata?.role || "employee",
-            avatar: data.user.user_metadata?.avatar || "",
-          });
-          this.setIsAuthenticated(true);
-        }
-
-        return data.user;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async login(email: string, password: string) {
-      this.loading = true;
-      try {
-        const supabase = useSupabaseClient();
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          console.error("Login Error:", error.message);
-          this.errorMessage = error.message;
-          this.loading = false;
-          return { success: false };
-        }
-
-        if (data.user) {
-          this.setUser({
-            id: data.user.id,
-            name: data.user.user_metadata?.name || "",
-            email: data.user.email || "",
-            role: data.user.user_metadata?.role || "employee",
-            avatar: data.user.user_metadata?.avatar || "",
-          });
-          this.setIsAuthenticated(true);
-          this.loading = false;
-        }
-
-        return { success: true };
-      } catch (error: any) {
-        console.error("Login Catch Error:", error.message);
-        this.errorMessage = error.message;
-        this.loading = false;
-        return { success: false };
-      }
-    },
-
-    async logout() {
-      const supabase = useSupabaseClient();
-      const { error } = await supabase.auth.signOut();
+  async function init() {
+    console.log("Initializing auth store");
+    try {
+      const { data, error } = await supabase.auth.getSession();
       if (error) {
-        console.error("Logout Error:", error.message);
-        this.errorMessage = error.message;
+        console.error("Error fetching session:", error.message);
+        errorMessage.value = error.message;
+        loading.value = false;
         return;
       }
 
-      this.setUser({
+      console.log("Session data:", data);
+
+      if (data.session?.user) {
+        setUser({
+          id: data.session.user.id,
+          name: data.session.user.user_metadata?.name || "",
+          email: data.session.user.email || "",
+          role: data.session.user.user_metadata?.role || "employee",
+          avatar: data.session.user.user_metadata?.avatar || "",
+        });
+        isAuthenticated.value = true;
+        accessToken.value = data.session.access_token;
+      } else {
+        setUser({
+          id: null,
+          name: "",
+          email: "",
+          role: "employee",
+          avatar: "",
+        });
+        isAuthenticated.value = false;
+        accessToken.value = null;
+      }
+    } catch (error: any) {
+      console.error("Init error:", error.message);
+      errorMessage.value = error.message;
+    } finally {
+      loading.value = false;
+    }
+
+    // Listen for auth state changes (client-side only)
+    if (!process.client) return;
+    supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          name: session.user.user_metadata?.name || "",
+          email: session.user.email || "",
+          role: session.user.user_metadata?.role || "employee",
+          avatar: session.user.user_metadata?.avatar || "",
+        });
+        isAuthenticated.value = true;
+        accessToken.value = session.access_token;
+      } else {
+        setUser({
+          id: null,
+          name: "",
+          email: "",
+          role: "employee",
+          avatar: "",
+        });
+        isAuthenticated.value = false;
+        accessToken.value = null;
+      }
+    });
+  }
+
+  async function signInWithGoogle() {
+    loading.value = true;
+    errorMessage.value = null;
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: "http://localhost:3000/auth/callback",
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      errorMessage.value = err.message;
+      isAuthenticated.value = false;
+      setUser({
         name: "",
         email: "",
         role: "employee",
         id: null,
         avatar: "",
       });
-      this.setIsAuthenticated(false);
-      this.accessToken = null;
-      this.loading = false;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-      return navigateTo("/auth/login");
-    },
-  },
+  function clearErrors() {
+    errorMessage.value = null;
+  }
+
+  function setUser(newUser: AuthType["user"]) {
+    user.name = newUser.name;
+    user.email = newUser.email;
+    user.role = newUser.role;
+    user.id = newUser.id;
+    user.avatar = newUser.avatar;
+  }
+
+  function setIsAuthenticated(authenticated: boolean) {
+    isAuthenticated.value = authenticated;
+  }
+
+  function setLoading(state: boolean) {
+    loading.value = state;
+  }
+
+  async function signUp(
+    name: string,
+    email: string,
+    password: string,
+    role: "employee" | "admin" = "employee"
+  ) {
+    loading.value = true;
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { role, name },
+        },
+      });
+
+      console.log("Sign Up Data:", data);
+      if (error) {
+        console.error("Sign Up Error:", error.message);
+        errorMessage.value = error.message;
+        return;
+      }
+
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          name: data.user.user_metadata?.name || "",
+          email: data.user.email || "",
+          role: data.user.user_metadata?.role || "employee",
+          avatar: data.user.user_metadata?.avatar || "",
+        });
+        setIsAuthenticated(true);
+      }
+
+      return data.user;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function login(email: string, password: string) {
+    loading.value = true;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error("Login Error:", error.message);
+        errorMessage.value = error.message;
+        loading.value = false;
+        return { success: false };
+      }
+
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          name: data.user.user_metadata?.name || "",
+          email: data.user.email || "",
+          role: data.user.user_metadata?.role || "employee",
+          avatar: data.user.user_metadata?.avatar || "",
+        });
+        setIsAuthenticated(true);
+        loading.value = false;
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Login Catch Error:", error.message);
+      errorMessage.value = error.message;
+      loading.value = false;
+      return { success: false };
+    }
+  }
+
+  async function logout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Logout Error:", error.message);
+      errorMessage.value = error.message;
+      return;
+    }
+
+    setUser({
+      name: "",
+      email: "",
+      role: "employee",
+      id: null,
+      avatar: "",
+    });
+    setIsAuthenticated(false);
+    accessToken.value = null;
+    loading.value = false;
+
+    return navigateTo("/auth/login");
+  }
+
+  return {
+    user,
+    accessToken,
+    isAuthenticated,
+    loading,
+    errorMessage,
+    init,
+    signInWithGoogle,
+    clearErrors,
+    setUser,
+    setIsAuthenticated,
+    setLoading,
+    signUp,
+    login,
+    logout,
+  };
 });
