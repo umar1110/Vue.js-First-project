@@ -18,6 +18,7 @@ export default defineNuxtConfig({
     public: {
       supabaseUrl: process.env.SUPABASE_URL,
       supabasekey: process.env.SUPABASE_KEY,
+      apiBase: process.env.API_BASE || "http://localhost:3000",
     },
   },
   vite: {

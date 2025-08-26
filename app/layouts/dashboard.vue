@@ -10,8 +10,8 @@
             v-for="item in menu"
             :key="item.name"
             :to="item.route"
-            class="block px-4 py-2 rounded hover:bg-gray-200"
-            :class="{ 'bg-gray-200 font-semibold': isActive(item.route) }"
+            class="block px-4 py-2 rounded hover:bg-gray-200 hover:text-black"
+            :class="{ 'bg-gray-200  text-black font-semibold': isActive(item.route) }"
           >
             {{ item.name }}
           </NuxtLink>
@@ -26,7 +26,7 @@
           </button>
         </div>
       </aside>
-      <main class="flex-1 p-6 overflow-auto">
+      <main class="flex-1 overflow-auto">
         <slot />
       </main>
     </div>
@@ -40,14 +40,11 @@ import BaseLayout from "./BaseLayout.vue";
 const route = useRoute();
 
 const menu = [
-  { name: "Home", route: "/dashboard" },
-  { name: "Users", route: "/dashboard/users" },
-  { name: "Reports", route: "/dashboard/reports" },
-  { name: "Settings", route: "/dashboard/settings" },
+  { name: "Users", route: "/timer/users" },
+  { name: "Projects", route: "/timer/projects" }
 ];
 
 const isActive = (r: string) => route.path === r;
 
-const {logout} = useAuthStore();
-
+const { logout } = useAuthStore();
 </script>

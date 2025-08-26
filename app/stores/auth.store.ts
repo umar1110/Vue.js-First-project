@@ -1,15 +1,13 @@
 import { defineStore } from "pinia";
 import { ref, reactive } from "vue";
-import { useSupabaseClient } from "#imports";
 import type { AuthType } from "~/types/auth.types";
 
 export const useAuthStore = defineStore("auth", () => {
   const user = reactive<AuthType["user"]>({
     name: "",
     email: "",
-    role: "employee",
+    role: "USER",
     id: null,
-    avatar: "",
   });
   const accessToken = ref<string | null>(null);
   const isAuthenticated = ref(false);
@@ -28,15 +26,12 @@ export const useAuthStore = defineStore("auth", () => {
         return;
       }
 
-      console.log("Session data:", data);
-
       if (data.session?.user) {
         setUser({
           id: data.session.user.id,
           name: data.session.user.user_metadata?.name || "",
           email: data.session.user.email || "",
-          role: data.session.user.user_metadata?.role || "employee",
-          avatar: data.session.user.user_metadata?.avatar || "",
+          role: data.session.user.user_metadata?.role || "USER",
         });
         isAuthenticated.value = true;
         accessToken.value = data.session.access_token;
@@ -45,8 +40,7 @@ export const useAuthStore = defineStore("auth", () => {
           id: null,
           name: "",
           email: "",
-          role: "employee",
-          avatar: "",
+          role: "USER",
         });
         isAuthenticated.value = false;
         accessToken.value = null;
@@ -67,8 +61,7 @@ export const useAuthStore = defineStore("auth", () => {
           id: session.user.id,
           name: session.user.user_metadata?.name || "",
           email: session.user.email || "",
-          role: session.user.user_metadata?.role || "employee",
-          avatar: session.user.user_metadata?.avatar || "",
+          role: session.user.user_metadata?.role || "USER",
         });
         isAuthenticated.value = true;
         accessToken.value = session.access_token;
@@ -77,8 +70,7 @@ export const useAuthStore = defineStore("auth", () => {
           id: null,
           name: "",
           email: "",
-          role: "employee",
-          avatar: "",
+          role: "USER",
         });
         isAuthenticated.value = false;
         accessToken.value = null;
@@ -107,9 +99,8 @@ export const useAuthStore = defineStore("auth", () => {
       setUser({
         name: "",
         email: "",
-        role: "employee",
+        role: "USER",
         id: null,
-        avatar: "",
       });
     } finally {
       loading.value = false;
@@ -125,7 +116,6 @@ export const useAuthStore = defineStore("auth", () => {
     user.email = newUser.email;
     user.role = newUser.role;
     user.id = newUser.id;
-    user.avatar = newUser.avatar;
   }
 
   function setIsAuthenticated(authenticated: boolean) {
@@ -140,32 +130,39 @@ export const useAuthStore = defineStore("auth", () => {
     name: string,
     email: string,
     password: string,
-    role: "employee" | "admin" = "employee"
+    role: "USER" | "admin" = "USER"
   ) {
     loading.value = true;
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { role, name },
-        },
+        options: { data: { role, name } },
       });
 
-      console.log("Sign Up Data:", data);
       if (error) {
-        console.error("Sign Up Error:", error.message);
         errorMessage.value = error.message;
         return;
       }
 
-      if (data.user) {
+      const user = data.user;
+      if (user) {
+        const { $axios } = useNuxtApp();
+
+        // Send user to backend (use user.id directly)
+        await $axios.post("/api/v1/users", {
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.name || "",
+          role: user.user_metadata?.role || "USER",
+        });
+
+        // Set state
         setUser({
-          id: data.user.id,
-          name: data.user.user_metadata?.name || "",
-          email: data.user.email || "",
-          role: data.user.user_metadata?.role || "employee",
-          avatar: data.user.user_metadata?.avatar || "",
+          id: user.id,
+          name: user.user_metadata?.name || "",
+          email: user.email || "",
+          role: user.user_metadata?.role || "USER",
         });
         setIsAuthenticated(true);
       }
@@ -196,8 +193,7 @@ export const useAuthStore = defineStore("auth", () => {
           id: data.user.id,
           name: data.user.user_metadata?.name || "",
           email: data.user.email || "",
-          role: data.user.user_metadata?.role || "employee",
-          avatar: data.user.user_metadata?.avatar || "",
+          role: data.user.user_metadata?.role || "USER",
         });
         setIsAuthenticated(true);
         loading.value = false;
@@ -223,9 +219,8 @@ export const useAuthStore = defineStore("auth", () => {
     setUser({
       name: "",
       email: "",
-      role: "employee",
+      role: "USER",
       id: null,
-      avatar: "",
     });
     setIsAuthenticated(false);
     accessToken.value = null;
