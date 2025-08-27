@@ -68,7 +68,7 @@ const { errorMessage, isAuthenticated, loading } = storeToRefs(auth);
 
 // Functions
 const handleSignUp = async () => {
-  await signUp(name.value, email.value, password.value, "employee");
+  await signUp(name.value, email.value, password.value, "USER");
 };
 
 // Watches

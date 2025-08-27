@@ -17,7 +17,8 @@
   ],
   "compilerOptions": {
     "types": [
-      "@nuxtjs/toast"
+      "@nuxtjs/toast",
+       "@nuxtjs/supabase"
     ]
   }
 }

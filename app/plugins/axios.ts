@@ -21,10 +21,34 @@ export default defineNuxtPlugin((nuxtApp) => {
   api.interceptors.response.use(
     (response) => response,
     (error) => {
-      console.error("API Error:", error.response?.data || error.message);
-      return Promise.reject(error);
+      console.log("Full error log : =========> ", error);
+      if (error.response) {
+        return Promise.reject({
+          success: false,
+          error: true,
+          statusCode: error.response.status,
+          message: error.response.data?.message || "Server Error",
+          data: error.response.data,
+        });
+      } else if (error.request) {
+        return Promise.reject({
+          success: false,
+          error: true,
+          statusCode: 0,
+          message: "Network error. Please check your connection.",
+        });
+      } else {
+        // something else
+        return Promise.reject({
+          success: false,
+          error: true,
+          statusCode: -1,
+          message: error.message || "Unexpected error",
+        });
+      }
     }
   );
+
   return {
     provide: {
       axios: api,

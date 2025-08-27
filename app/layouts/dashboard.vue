@@ -41,7 +41,7 @@ const route = useRoute();
 
 const menu = [
   { name: "Users", route: "/timer/users" },
-  { name: "Projects", route: "/timer/projects" }
+  { name: "My Projects", route: "/timer/projects" }
 ];
 
 const isActive = (r: string) => route.path === r;

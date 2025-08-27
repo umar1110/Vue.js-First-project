@@ -1,15 +1,60 @@
 import routes from "~/constants/routes";
 import type { ProjectType } from "~/types/project.types";
 
-const createProjectAction = async (project: ProjectType) => {
+export const createMyProjectAction = async (project: ProjectType) => {
   try {
     const { $axios } = useNuxtApp();
-    const response = await $axios.post(routes.api.project.create, {
+    const response = await $axios.post(routes.api.project.mine.index, {
       ...project,
     });
-    return response.data
+    console.log("response.data", response.data);
+    return response.data;
   } catch (error) {
     console.error("Error creating project:", error);
-    throw error;
+    return error;
+  }
+};
+
+export const getAllMyProjects = async () => {
+  try {
+    const { $axios } = useNuxtApp();
+    const { user } = useAuthStore();
+    const response = await $axios.get(
+      `${routes.api.project.mine.index}?userId=${user.id}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    return error;
+  }
+};
+
+export const updateMyProjectAction = async (
+  projectId: string,
+  updatedData: Partial<ProjectType>
+) => {
+  try {
+    const { $axios } = useNuxtApp();
+    const response = await $axios.put(`${routes.api.project.mine.index}`, {
+      ...updatedData,
+      projectId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating project:", error);
+    return error;
+  }
+};
+
+export const deleteMyProjectAction = async (projectId: string) => {
+  try {
+    const { $axios } = useNuxtApp();
+    const response = await $axios.delete(
+      `${routes.api.project.mine.index}/${projectId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    return error;
   }
 };

@@ -4,11 +4,10 @@ export default defineEventHandler(async (event) => {
   const body: {
     name: string;
     description: string;
-    creatorId: string;
+    createdBy: string;
     estimatedHours: number;
     assignedTo: string[];
   } = await readBody(event);
-
   if (!body) {
     throw createError({ statusCode: 400, message: "Missing project data" });
   }
@@ -19,7 +18,7 @@ export default defineEventHandler(async (event) => {
         name: body.name,
         description: body.description || null,
         creator: {
-          connect: { id: body.creatorId },
+          connect: { id: body.createdBy },
         },
         estimatedHours: body.estimatedHours || 0,
         assignments: {
@@ -38,7 +37,7 @@ export default defineEventHandler(async (event) => {
       },
     });
 
-    return { status: 201, project };
+    return { statusCode: 201, project };
   } catch (err: any) {
     // Prisma errors have a `code` and `message`
     console.error("Prisma error:", err);

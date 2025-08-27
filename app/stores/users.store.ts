@@ -3,7 +3,7 @@
 import { getAllUsersAction } from "~/actions/userActions";
 import type { UserType } from "~/types/auth.types";
 
-export const usersStore = defineStore("user", () => {
+export const useUsersStore = defineStore("user", () => {
   const users = ref<UserType[]>([]);
   const isUsersFetched = ref<boolean>(false);
   const loading = ref<boolean>(false);

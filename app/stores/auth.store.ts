@@ -53,29 +53,29 @@ export const useAuthStore = defineStore("auth", () => {
     }
 
     // Listen for auth state changes (client-side only)
-    if (!process.client) return;
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session);
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          name: session.user.user_metadata?.name || "",
-          email: session.user.email || "",
-          role: session.user.user_metadata?.role || "USER",
-        });
-        isAuthenticated.value = true;
-        accessToken.value = session.access_token;
-      } else {
-        setUser({
-          id: null,
-          name: "",
-          email: "",
-          role: "USER",
-        });
-        isAuthenticated.value = false;
-        accessToken.value = null;
-      }
-    });
+    // if (!process.client) return;
+    // supabase.auth.onAuthStateChange((event, session) => {
+    //   console.log("Auth state changed:", event, session);
+    //   if (session?.user) {
+    //     setUser({
+    //       id: session.user.id,
+    //       name: session.user.user_metadata?.name || "",
+    //       email: session.user.email || "",
+    //       role: session.user.user_metadata?.role || "USER",
+    //     });
+    //     isAuthenticated.value = true;
+    //     accessToken.value = session.access_token;
+    //   } else {
+    //     setUser({
+    //       id: null,
+    //       name: "",
+    //       email: "",
+    //       role: "USER",
+    //     });
+    //     isAuthenticated.value = false;
+    //     accessToken.value = null;
+    //   }
+    // });
   }
 
   async function signInWithGoogle() {
@@ -209,6 +209,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function logout() {
+    console.log("Logging out...");
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Logout Error:", error.message);
