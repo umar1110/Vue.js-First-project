@@ -58,3 +58,14 @@ export const deleteMyProjectAction = async (projectId: string) => {
     return error;
   }
 };
+
+export const getAssignedProjects = async () => {
+  try {
+    const { $axios } = useNuxtApp();
+    const response = await $axios.get(`${routes.api.project.assigned.index}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching assigned projects:", error);
+    return error;
+  }
+};

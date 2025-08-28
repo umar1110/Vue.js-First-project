@@ -17,13 +17,13 @@ export default defineEventHandler(async (event) => {
       userId: user.id,
     },
     include: {
-      project: true, // include full project details
+      project: true,
     },
   });
 
   return {
-    status: 200,
+    statusCode: 200,
     message: "Assigned projects fetched successfully",
-    data: assignedProjects.map((a: any) => a.project),
+    projects: assignedProjects.map((a: any) => a.project),
   };
 });

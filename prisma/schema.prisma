@@ -13,13 +13,19 @@ enum Role {
   USER
 }
 
+enum TimerStatus {
+  RUNNING
+  STOPPED
+  PAUSED
+}
+
 model User {
   id                  String              @id @default(uuid())
   name                String
   email               String              @unique
   role                Role                @default(USER)
   projectsAssignments ProjectAssignment[] // Links to assigned projects
-  timeLogs            TimeLog[] // Links to time logs
+  timeLogs            TimeLog[]
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
   projects            Project[]           @relation("User")
@@ -33,7 +39,7 @@ model Project {
   createdBy      String // ID of the user who created the project
   creator        User                @relation("User", fields: [createdBy], references: [id])
   assignments    ProjectAssignment[] // Links to assigned users
-  timeLogs       TimeLog[] // Links to time logs
+  timeLogs       TimeLog[]
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
   userId         String?
@@ -49,11 +55,16 @@ model ProjectAssignment {
 }
 
 model TimeLog {
-  id        String   @id @default(uuid())
-  userId    String
-  projectId String
-  hours     Float
-  user      User     @relation(fields: [userId], references: [id])
-  project   Project  @relation(fields: [projectId], references: [id])
-  createdAt DateTime @default(now())
+  id          String      @id @default(uuid())
+  userId      String
+  projectId   String
+  startTime   DateTime
+  endTime     DateTime?
+  durationSec Int?
+  description String
+  status      TimerStatus @default(RUNNING)
+  user        User        @relation(fields: [userId], references: [id])
+  project     Project     @relation(fields: [projectId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }

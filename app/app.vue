@@ -1,6 +1,7 @@
 <template>
   <div>
-    <NuxtLayout>
+    <NavBar />
+    <NuxtLayout :name="layoutName">
       <UApp>
         <NuxtPage />
       </UApp>
@@ -8,16 +9,21 @@
   </div>
 </template>
 
-<!-- For test purpose onluy -->
-<!-- 
 <script setup lang="ts">
-  const {$axios} = useNuxtApp()
-  const fetchUser = async ()=>{
-    const response = await $axios.get('/api/test')
-    console.log("response from app.vue =================> ", response.data)
-  }
-  onMounted(() => {
-    fetchUser()
-  });
+import NavBar from "~/components/common/NavBar.vue";
+const route = useRoute();
 
-</script> -->
+const layoutName = ref<"default" | "dashboard">("default");
+
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath.startsWith("/timer")) {
+      layoutName.value = "dashboard";
+    } else {
+      layoutName.value = "default";
+    }
+  },
+  { immediate: true } // run once on mount too
+);
+</script>

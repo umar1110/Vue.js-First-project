@@ -1,7 +1,7 @@
 <template>
   <div>
     <header
-      class="bg-[#3a0b50] border-l border-white py-3 px-3 flex justify-end"
+      class="bg-[#141414] border-l border-white py-5 px-3 flex justify-end"
     >
       <button
         @click="
@@ -187,10 +187,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  layout: "dashboard",
-});
-// Imports
+
 import type { TableColumn } from "@nuxt/ui";
 import type { Row } from "@tanstack/vue-table";
 import { h, resolveComponent } from "vue";
@@ -252,6 +249,7 @@ const columns: TableColumn<ProjectType>[] = [
 const authStore = useAuthStore();
 const userStore = useUsersStore();
 const projectStore = useProjectsStore();
+
 // Extractions from store
 const { fetchUsers } = userStore;
 const { fetchProjects } = projectStore;
@@ -277,6 +275,7 @@ const projectData: ProjectType = reactive({
   assignedTo: [],
 });
 const selectedProject = ref<ProjectType | null>(null);
+
 // Methods
 function getRowItems(row: Row<ProjectType>) {
   return [
@@ -293,15 +292,6 @@ function getRowItems(row: Row<ProjectType>) {
         deleteProject(row.original.id!);
       },
     },
-    {
-      type: "separator",
-    },
-    {
-      label: "View customer",
-    },
-    {
-      label: "View payment details",
-    },
   ];
 }
 const createProject = async () => {
@@ -310,7 +300,6 @@ const createProject = async () => {
       color: "info",
       title: "Creating project...",
     });
-    console.log("projectData", { ...projectData });
     const response = await createMyProjectAction(projectData);
     if (response.statusCode === 201) {
       booleans.isAddNewProjectSlideOverOpen = false;
@@ -325,7 +314,6 @@ const createProject = async () => {
       });
       await fetchProjects();
     } else {
-      console.error("Error creating project:", response.message);
       toast.add({
         color: "error",
         title: response.message || "Failed to create project",
@@ -354,7 +342,6 @@ const updateProject = async () => {
       });
       await fetchProjects();
     } else {
-      console.error("Error updating project:", response.message);
       toast.add({
         color: "error",
         title: response.message || "Failed to update project",
@@ -378,7 +365,6 @@ const deleteProject = async (id: string) => {
       });
       await fetchProjects();
     } else {
-      console.error("Error deleting project:", response.message);
       toast.add({
         color: "error",
         title: response.message || "Failed to delete project",
@@ -389,8 +375,8 @@ const deleteProject = async (id: string) => {
   }
 };
 
-onMounted(async () => {
-  await fetchProjects();
-  await fetchUsers();
+onMounted(() => {
+  fetchProjects();
+  fetchUsers();
 });
 </script>

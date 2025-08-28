@@ -36,7 +36,6 @@ export default defineEventHandler(async (event) => {
         },
       },
     });
-
     return { statusCode: 201, project };
   } catch (err: any) {
     // Prisma errors have a `code` and `message`
