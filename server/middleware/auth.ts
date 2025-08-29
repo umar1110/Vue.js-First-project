@@ -16,6 +16,7 @@ export default defineEventHandler(async (event: H3Event) => {
   const publicRoutes = [
     { methods: ["POST"], path: "/api/users" },
     { methods: ["GET"], path: "/api/test" },
+    { methods: ["POST"], path: "/api/setauthcookies" },
   ];
 
   const isPublicRoute = publicRoutes.some(
@@ -32,13 +33,21 @@ export default defineEventHandler(async (event: H3Event) => {
     if (!user) {
       return sendError(
         event,
-        createError({ statusCode: 401, statusMessage: "Unauthorized" })
+        createError({
+          statusCode: 401,
+          statusMessage: "Unauthorized",
+          message: "User is not authenticated",
+        })
       );
     }
   } catch (error) {
     return sendError(
       event,
-      createError({ statusCode: 401, statusMessage: "Unauthorized" })
+      createError({
+        statusCode: 401,
+        statusMessage: "Unauthorized",
+        message: "User is not authenticated",
+      })
     );
   }
 
@@ -64,6 +73,7 @@ export default defineEventHandler(async (event: H3Event) => {
         createError({
           statusCode: 403,
           statusMessage: "Forbidden: Admins only",
+          message: "You are not allowed to access this resource.",
         })
       );
     }

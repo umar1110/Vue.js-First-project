@@ -27,7 +27,10 @@ export default defineNuxtPlugin((nuxtApp) => {
           success: false,
           error: true,
           statusCode: error.response.status,
-          message: error.response.data?.statusMessage || error.response.data?.message || "Server Error",
+          message:
+            error.response.data?.message ||
+            error.response.data?.statusMessage ||
+            "Server Error",
           data: error.response.data,
         });
       } else if (error.request) {

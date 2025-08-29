@@ -11,20 +11,14 @@ export default defineEventHandler(async (event) => {
     assignedTo?: string[];
   } = await readBody(event);
 
-  const user = await serverSupabaseUser(event);
-  if (!user) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized",
-    });
-  }
-  const userId = user.id;
+  const userId = event.context.user.id;
 
   let project = await projectService.getProjectById(body.projectId);
   if (!project) {
     throw createError({
       statusCode: 404,
       statusMessage: "Project not found",
+      message: "The specified project could not be found."
     });
   }
 
@@ -32,6 +26,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 403,
       statusMessage: "Not allowed",
+      message: "You are not allowed to modify this project."
     });
   }
 

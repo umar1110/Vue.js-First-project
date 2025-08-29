@@ -8,10 +8,15 @@ export default defineEventHandler(async (event) => {
     return createError({
       statusCode: 400,
       statusMessage: "Project ID is required",
+      message: "Project ID is required"
     });
   }
 
   await projectService.deleteProject(projectId);
 
-  return { statusCode: 200, statusMessage: "Project deleted successfully" };
+  return {
+    statusCode: 200,
+    statusMessage: "Project deleted successfully",
+    message: "Project deleted successfully",
+  };
 });

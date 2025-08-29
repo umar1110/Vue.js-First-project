@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
       return createError({
         statusCode: 400,
         statusMessage: "Bad Request",
-        data: "Invalid request body",
+        message: "Invalid request body",
       });
     }
 
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
       return createError({
         statusCode: 403,
         statusMessage: "Forbidden",
-        data: "User is not assigned to this project",
+        message: "User is not assigned to this project",
       });
     }
 
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
     return createError({
       statusCode: 500,
       statusMessage: "Internal Server Error",
-      data: error,
+      message: "An error occurred while creating the time log."
     });
   }
 });

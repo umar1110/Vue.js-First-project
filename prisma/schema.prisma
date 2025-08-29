@@ -19,6 +19,12 @@ enum TimerStatus {
   PAUSED
 }
 
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+}
+
 model User {
   id                  String              @id @default(uuid())
   name                String
@@ -29,6 +35,8 @@ model User {
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
   projects            Project[]           @relation("User")
+  ownedProjects       ProjectManagement[]
+  tasks               TaskAssignment[]
 }
 
 model Project {
@@ -38,11 +46,13 @@ model Project {
   estimatedHours Float
   createdBy      String // ID of the user who created the project
   creator        User                @relation("User", fields: [createdBy], references: [id])
+  managers       ProjectManagement[]
   assignments    ProjectAssignment[] // Links to assigned users
-  timeLogs       TimeLog[]
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  userId         String?
+  timeLogs      TimeLog[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  userId       String?
+  tasks        Task[]
 }
 
 model ProjectAssignment {
@@ -57,14 +67,53 @@ model ProjectAssignment {
 model TimeLog {
   id          String      @id @default(uuid())
   userId      String
-  projectId   String
+  projectId   String?
+  taskId      String?
   startTime   DateTime
   endTime     DateTime?
-  durationSec Int?
+  pauseTime   DateTime?
+  pausedSec   Int         @default(0)
+  durationSec Int         @default(0)
   description String
   status      TimerStatus @default(RUNNING)
   user        User        @relation(fields: [userId], references: [id])
-  project     Project     @relation(fields: [projectId], references: [id])
+  project     Project?    @relation(fields: [projectId], references: [id])
+  task        Task?       @relation(fields: [taskId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+}
+
+model Task {
+  id           String           @id @default(uuid())
+  title        String
+  description  String?
+  projectId    String
+  estimatedHours Float
+  status       TaskStatus       @default(OPEN)
+  project      Project          @relation(fields: [projectId], references: [id])
+  assignees    TaskAssignment[]
+  timeLogs     TimeLog[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model TaskAssignment {
+  id         String     @id @default(uuid())
+  taskId     String
+  userId     String
+  status     TaskStatus @default(OPEN)
+  task       Task       @relation(fields: [taskId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+  assignedAt DateTime   @default(now())
+}
+
+model ProjectManagement {
+  id        String  @id @default(uuid())
+  userId    String
+  projectId String
+  role      Role    @default(USER)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -1,3 +1,4 @@
+import { TimeLog } from "@prisma/client";
 import { prisma } from "../db";
 
 export const timeLogsServices = {
@@ -69,6 +70,62 @@ export const timeLogsServices = {
           },
         },
       },
+    });
+  },
+  addTimeLogInTask: async (data: {
+    taskId: string;
+    projectId: string;
+    description: string;
+    userId: string;
+  }) => {
+    return prisma.timeLog.create({
+      data: {
+        taskId: data.taskId,
+        projectId: data.projectId,
+        startTime: new Date(),
+        status: "RUNNING",
+        durationSec: 0,
+        description: data.description,
+        userId: data.userId,
+      },
+    });
+  },
+  // Updated Services according to tasks added in projects
+  alreadyRunningTaskTimeLogInAProject: async (data: {
+    taskId: string;
+    userId: string;
+    projectId: string;
+  }) => {
+    return prisma.timeLog.findFirst({
+      where: {
+        taskId: data.taskId,
+        userId: data.userId,
+        projectId: data.projectId,
+        status: "RUNNING",
+      },
+    });
+  },
+  alreadyRunningTaskTimeLog: async (userId: string) => {
+    return prisma.timeLog.findFirst({
+      where: {
+        userId,
+        status: "RUNNING",
+      },
+    });
+  },
+  createEmptyTimeLog: async (userId: string, description?: string) => {
+    return prisma.timeLog.create({
+      data: {
+        userId,
+        description: description || "",
+        startTime: new Date(),
+      },
+    });
+  },
+  saveTimeLog: async (timeLog: TimeLog) => {
+    return prisma.timeLog.update({
+      where: { id: timeLog.id },
+      data: timeLog,
     });
   },
 };
