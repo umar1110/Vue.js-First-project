@@ -58,6 +58,17 @@ export const timeLogsServices = {
       where: {
         projectId,
       },
+      orderBy: {
+        startTime: "desc",
+      },
+      // Include only name of user
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
   },
 };

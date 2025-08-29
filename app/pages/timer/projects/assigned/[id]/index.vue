@@ -58,11 +58,78 @@
         </button>
       </div>
     </header>
+
+    <section class="p-4">
+      <h2 class="text-2xl font-semibold text-center">Time Logs <span v-if="!allTimeLogsLoading" > ({{ allTimeLogs.length }}) </span> </h2>
+      <div v-if="allTimeLogsLoading" class="space-y-4 my-5 px-3">
+        <!-- 10 skeletons with map -->
+        <USkeleton class="h-8 w-full" v-for="index in 10" :key="index" />
+      </div>
+      <div v-else>
+        <div v-if="allTimeLogs.length === 0" class="my-5 px-3">
+          <p class="text-gray-400">No time logs found.</p>
+        </div>
+        <div v-else class="space-y-6 my-5">
+          <div
+            v-for="(logGroup, index) in allTimeLogs"
+            :key="index"
+            class="space-y-3"
+          >
+            <h3 class="text-xl font-medium">
+              {{ logGroup.date }}
+            </h3>
+            <div class="space-y-2">
+              <div
+                v-for="log in logGroup.logs"
+                :key="log.id"
+                class="p-3 border border-gray-700 rounded-lg flex justify-between items-center"
+              >
+                <div>
+                  <p class="font-semibold">
+                    {{ log.description || "No description" }}
+                  </p>
+                  <p>
+                    <span class="text-gray-400">By: </span>
+                    <span class="text-sm text-gray-500">{{
+                      log.user?.name || "Unknown"
+                    }}</span>
+                  </p>
+                </div>
+                <div class="text-right flex space-x-10">
+                  <p class="text-sm text-gray-400">
+                    {{
+                      new Date(log.startTime!).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    }}
+                    -
+                    {{
+                      log.endTime
+                        ? new Date(log.endTime).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "Ongoing"
+                    }}
+                  </p>
+
+                  <p class="text-sm text-gray-400">
+                    {{ formatSecondsToTime(log.durationSec) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 </template>
 
 <script setup lang="ts">
 import {
+  getAlltimeLogsOfProjectAction,
   getRunningTimeLogAction,
   startNewTimeOffAction,
   stopRunningTimeLogAction,
@@ -83,23 +150,23 @@ const existingTimeLog = reactive<TimeLogsType>({
   durationSec: 0,
   status: "STOPPED",
 });
-
+const allTimeLogs = ref<{ date: string; logs: TimeLogsType[] }[]>([]);
+const allTimeLogsLoading = ref(true);
 let timer: NodeJS.Timeout | null = null;
 
+// Functions
 function startTimer() {
   if (timer) clearInterval(timer);
   timer = setInterval(() => {
     existingTimeLog.durationSec++;
   }, 1000);
 }
-
 function stopTimer() {
   if (timer) {
     clearInterval(timer);
     timer = null;
   }
 }
-
 const getRunningTimeOff = async () => {
   try {
     existingTimeLogLoading.value = true;
@@ -142,7 +209,6 @@ const handleStopRunningTimeOff = async () => {
       existingTimeLog.description
     );
     toast.clear();
-    console.log("Stopped =========> ", response);
     if (response.statusCode === 200) {
       existingTimeLog.status = "STOPPED";
       existingTimeLog.description = "";
@@ -153,6 +219,17 @@ const handleStopRunningTimeOff = async () => {
         color: "success",
         title: "Timer stopped successfully",
       });
+      // Add Time log in Today's
+      const updatedTimeLogs = allTimeLogs.value.map((day) => {
+        if (day.date === "Today") {
+          return {
+            ...day,
+            logs: [response.timeLog, ...day.logs],
+          };
+        }
+        return day;
+      });
+      allTimeLogs.value = updatedTimeLogs;
     } else {
       toast.add({
         color: "error",
@@ -207,10 +284,33 @@ const handleStartNewTimeLog = async () => {
     startingNewTimeLog.value = false;
   }
 };
+const fetchAllTimeLogs = async () => {
+  try {
+    allTimeLogsLoading.value = true;
+    const response = await getAlltimeLogsOfProjectAction(projectId);
+    if (response.statusCode === 200) {
+      allTimeLogs.value = response.timeLogs;
+    } else {
+      toast.add({
+        color: "error",
+        title: response.message || "Something went wrong",
+      });
+      navigateTo(routes.client.project.assigned.index);
+    }
+  } catch (error) {
+    toast.add({
+      color: "error",
+      title: "Something went wrong",
+    });
+  } finally {
+    allTimeLogsLoading.value = false;
+  }
+};
 watch(
   () => projectId,
   () => {
     getRunningTimeOff();
+    fetchAllTimeLogs();
   },
   { immediate: true }
 );

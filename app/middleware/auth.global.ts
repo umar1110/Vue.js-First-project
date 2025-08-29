@@ -16,7 +16,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   });
 
   // Redirect unauthenticated users trying to access /timer
-  if (!isAuthenticated.value && to.path === "/timer") {
+  if (!isAuthenticated.value && to.path.startsWith("/timer")) {
     console.log("Redirecting to /auth/login: User not authenticated");
     return navigateTo("/auth/login");
   }

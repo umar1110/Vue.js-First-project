@@ -44,3 +44,15 @@ export const startNewTimeOffAction = async (
     return error;
   }
 };
+
+export const getAlltimeLogsOfProjectAction = async (projectId: string) => {
+    try {
+        const { $axios } = useNuxtApp();
+        const response = await $axios.get(routes.api.timeLogs.index, {
+            params: { projectId },
+        });
+        return response.data;
+    } catch (error) {
+        return error;
+    }
+};
