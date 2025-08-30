@@ -5,7 +5,12 @@ export interface ProjectType {
   name: string;
   description: string;
   estimatedHours: number;
+  timeStatus: number;
   createdBy: string;
   assignedTo: string[];
   creator?: UserType;
+  color: string;
+  timeFrameStart: Date;
+  timeFrameEnd?: Date;
+  status?: "OPEN" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD" | "CANCELLED";
 }

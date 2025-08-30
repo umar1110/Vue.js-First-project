@@ -18,7 +18,7 @@ const layoutName = ref<"default" | "dashboard">("default");
 watch(
   () => route.path,
   (newPath) => {
-    if (newPath.startsWith("/timer")) {
+    if (newPath.startsWith("/timer") || newPath.startsWith("/projects")) {
       layoutName.value = "dashboard";
     } else {
       layoutName.value = "default";

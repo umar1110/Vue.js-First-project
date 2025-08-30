@@ -7,6 +7,9 @@ export default defineEventHandler(async (event) => {
     createdBy: string;
     estimatedHours: number;
     assignedTo: string[];
+    color: string;
+    timeFrameStart: Date;
+    timeFrameEnd: Date | null;
   } = await readBody(event);
   if (!body) {
     throw createError({ statusCode: 400, message: "Missing project data" });
@@ -26,6 +29,9 @@ export default defineEventHandler(async (event) => {
             user: { connect: { id: userId } },
           })),
         },
+        timeFrameStart: body.timeFrameStart,
+        timeFrameEnd: body.timeFrameEnd ? body.timeFrameEnd : undefined,
+        color: body.color,
       },
       include: {
         creator: true,

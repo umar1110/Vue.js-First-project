@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-[#050505]">
+  <div class="flex h-screen text-white bg-[#050505]">
     <aside class="w-64 bg-[#141414] shadow-lg flex flex-col">
       <div class="h-16 flex items-center justify-center border-b">
         <h1 class="text-xl font-bold">Dashboard</h1>
@@ -11,9 +11,9 @@
           v-for="item in menu"
           :key="item.name"
           :to="item.routes[0]"
-          class="block px-4 py-2 rounded hover:bg-gray-200 hover:text-black"
+          class="block px-4 py-2 rounded hover:bg-[#292929]"
           :class="{
-            'bg-gray-200 text-black font-semibold': isActive(item.routes),
+            'bg-[#292929] text-white font-semibold': isActive(item.routes),
           }"
         >
           {{ item.name }}
@@ -44,7 +44,7 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 
 const menu = [
-  { name: "My Projects", routes: ["/timer/projects"] },
+  { name: "My Projects", routes: ["/timer/projects", "/timer/projects/:id"] },
   {
     name: "Assigned Projects",
     routes: ["/timer/projects/assigned", "/timer/projects/assigned/:id"],
