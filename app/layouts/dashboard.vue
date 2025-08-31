@@ -55,7 +55,7 @@ const isActive = (routes: string[]) => {
   return routes.some((r) => {
     if (r.includes(":")) {
       const base = r.split("/:")[0];
-      return route.path.startsWith(base as string);
+      return route.path === (base as string);
     }
     return route.path === r;
   });

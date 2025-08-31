@@ -1,5 +1,5 @@
 import routes from "~/constants/routes";
-import type { ProjectType } from "~/types/project.types";
+import type { ProjectType, TaskType } from "~/types/project.types";
 
 export const createMyProjectAction = async (project: ProjectType) => {
   try {
@@ -86,13 +86,46 @@ export const getProjectById = async (projectId: string) => {
 export const updatePinProject = async (pin: boolean, projectId: string) => {
   try {
     const { $axios } = useNuxtApp();
-    const response = await $axios.put(`${routes.api.project.index}/pin`, {},{params:{
-      projectId,
-      pinned: pin
-    }});
+    const response = await $axios.put(
+      `${routes.api.project.index}/pin`,
+      {},
+      {
+        params: {
+          projectId,
+          pinned: pin,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating project pin status:", error);
+    return error;
+  }
+};
+
+export const getAllProjectTasks = async (projectId: string) => {
+  try {
+    const { $axios } = useNuxtApp();
+    const response = await $axios.get(
+      `${routes.api.project.tasks.all}?projectId=${projectId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching project tasks:", error);
+    return error;
+  }
+};
+
+export const addNewTaskAction = async (task: TaskType) => {
+  try {
+    const { $axios } = useNuxtApp();
+    const response = await $axios.post(
+      `${routes.api.project.tasks.index}`,
+      task
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding new task:", error);
     return error;
   }
 };

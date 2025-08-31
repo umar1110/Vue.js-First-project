@@ -23,6 +23,7 @@ export interface TaskType {
   projectId:string;
   estimatedHours:number;
   timeStatus?:number;
+  assignees:string[];
   status?: "OPEN" | "IN_PROGRESS" | "COMPLETED" ;
   createdAt?: Date;
   updatedAt?: Date;

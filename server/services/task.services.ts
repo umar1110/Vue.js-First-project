@@ -8,6 +8,7 @@ export const taskServices = {
     estimatedHours: number;
     assignees: string[];
   }) => {
+    console.log("Creating task:", data);
     const newTask = await prisma.task.create({
       data: {
         projectId: data.projectId,
@@ -15,7 +16,9 @@ export const taskServices = {
         description: data.description,
         estimatedHours: data.estimatedHours,
         assignees: {
-          connect: data.assignees.map((id) => ({ id })),
+          create: data.assignees.map((userId) => ({
+            user: { connect: { id: userId } },
+          })),
         },
       },
     });
@@ -62,6 +65,17 @@ export const taskServices = {
         assignees: {
           none: {},
         },
+      },
+    });
+    return tasks;
+  },
+  getTasksByProjectId: async (projectId: string) => {
+    const tasks = await prisma.task.findMany({
+      where: {
+        projectId: projectId,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
     return tasks;

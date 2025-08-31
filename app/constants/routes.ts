@@ -8,6 +8,10 @@ const routes = {
       assigned: {
         index: "/api/v1/projects/assigned",
       },
+      tasks: {
+        index: "/api/v1/projects/task",
+        all: "/api/v1/projects/task/all",
+      },
     },
     users: {
       getAll: "/api/v1/users",
