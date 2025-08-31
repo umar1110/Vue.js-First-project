@@ -1,8 +1,9 @@
 <template>
   <NuxtLayout name="project-details">
-    <div>dashboard: {{ projectId }}</div>
+    <div>tasks: {{ projectId }}</div>
   </NuxtLayout>
 </template>
+
 <script setup lang="ts">
 const route = useRoute();
 const projectId = route.params.id;

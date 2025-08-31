@@ -8,9 +8,22 @@ export interface ProjectType {
   timeStatus: number;
   createdBy: string;
   assignedTo: string[];
+  isPinned: boolean;
   creator?: UserType;
   color: string;
   timeFrameStart: Date;
   timeFrameEnd?: Date;
   status?: "OPEN" | "IN_PROGRESS" | "COMPLETED" | "ON_HOLD" | "CANCELLED";
+}
+
+export interface TaskType {
+  id?: string;
+  title:string;
+  description:string;
+  projectId:string;
+  estimatedHours:number;
+  timeStatus?:number;
+  status?: "OPEN" | "IN_PROGRESS" | "COMPLETED" ;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

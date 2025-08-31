@@ -1,6 +1,7 @@
 const routes = {
   api: {
     project: {
+      index:"/api/v1/projects",
       mine: {
         index: "/api/v1/projects/mine",
       },
@@ -20,6 +21,10 @@ const routes = {
   // For frontend
   client: {
     project: {
+      indexSingle: (id: string) => `/timer/projects/${id}/dashboard`,
+      index: "/timer/projects",
+      tasks: (id: string) => `/timer/projects/${id}/tasks`,
+      team: (id: string) => `/timer/projects/${id}/team`,
       assigned: {
         indexSingle: (id: string) => `/timer/projects/assigned/${id}`,
         index: "/timer/projects/assigned",

@@ -106,6 +106,7 @@ model Task {
   description    String?
   projectId      String
   estimatedHours Float
+  timeStatus     Float            @default(0.00)
   status         TaskStatus       @default(OPEN)
   project        Project          @relation(fields: [projectId], references: [id])
   assignees      TaskAssignment[]

@@ -69,3 +69,30 @@ export const getAssignedProjects = async () => {
     return error;
   }
 };
+
+export const getProjectById = async (projectId: string) => {
+  try {
+    const { $axios } = useNuxtApp();
+    const response = await $axios.get(
+      `${routes.api.project.mine.index}/${projectId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    return error;
+  }
+};
+
+export const updatePinProject = async (pin: boolean, projectId: string) => {
+  try {
+    const { $axios } = useNuxtApp();
+    const response = await $axios.put(`${routes.api.project.index}/pin`, {},{params:{
+      projectId,
+      pinned: pin
+    }});
+    return response.data;
+  } catch (error) {
+    console.error("Error updating project pin status:", error);
+    return error;
+  }
+};

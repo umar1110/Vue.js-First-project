@@ -9,14 +9,16 @@ export const projectService = {
       createdBy?: string;
       estimatedHours?: number;
       assignedTo?: string[];
+      isPinned?: boolean;
     }
   ) {
     return prisma.project.update({
       where: { id: projectId },
       data: {
-        name: data.name,
-        description: data.description,
-        estimatedHours: data.estimatedHours,
+        ...(data.name && { name: data.name }),
+        ...(data.description && { description: data.description }),
+        ...(data.estimatedHours && { estimatedHours: data.estimatedHours }),
+        ...(data.isPinned != undefined && { isPinned: data.isPinned }),
         ...(data.createdBy && { creator: { connect: { id: data.createdBy } } }),
         ...(data.assignedTo && {
           assignments: {
@@ -61,6 +63,48 @@ export const projectService = {
         assignments: {
           where: { userId },
         },
+      },
+    });
+  },
+  async getPinnedProjectsByUserId(userId: string) {
+    return prisma.project.findMany({
+      where: {
+        createdBy: userId,
+        isPinned: true,
+      },
+      include: {
+        creator: true,
+        assignments: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        },
+      },
+      orderBy: {
+        pinnedAt: "desc",
+      },
+    });
+  },
+  async getUnpinnedProjectsByUserId(userId: string) {
+    return prisma.project.findMany({
+      where: {
+        createdBy: userId,
+        isPinned: false,
+      },
+      include: {
+        creator: true,
+        assignments: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
   },

@@ -201,6 +201,13 @@
                 </UPopover>
               </div>
             </div>
+            <div class="w-full">
+              <UTextarea
+                placeholder="Project Description....(optional)"
+                v-model="projectData.description"
+                class="w-full"
+              />
+            </div>
             <button
               type="submit"
               class="ml-auto bg-white cursor-pointer rounded-md text-black py-2 px-4 hover:bg-gray-300"
@@ -373,6 +380,13 @@
                 </UPopover>
               </div>
             </div>
+            <div class="w-full">
+              <UTextarea
+                placeholder="Project Description....(optional)"
+                v-model="selectedProject.description"
+                class="w-full"
+              />
+            </div>
             <button
               type="submit"
               class="ml-auto bg-white cursor-pointer rounded-md text-black py-2 px-4 hover:bg-gray-300"
@@ -399,7 +413,9 @@ import {
   createMyProjectAction,
   deleteMyProjectAction,
   updateMyProjectAction,
+  updatePinProject,
 } from "~/actions/projectActions";
+import routes from "~/constants/routes";
 import type { ProjectType } from "~/types/project.types";
 
 const dateFormatter = new DateFormatter("en-US", {
@@ -434,7 +450,7 @@ const columns: TableColumn<ProjectType>[] = [
         NuxtLink,
         {
           class: "flex items-center space-x-2",
-          to: `/timer/projects/${row.original.id}`,
+          to: routes.client.project.indexSingle(row.original.id!),
         },
         [
           h("div", {
@@ -500,6 +516,53 @@ const columns: TableColumn<ProjectType>[] = [
       return timeStatus ? `${timeStatus} h` : "oh";
     },
   },
+  {
+    header: "Assigned to",
+    cell: ({ row }) => {
+      const UAvatarGroup = resolveComponent("UAvatarGroup");
+      const UAvatar = resolveComponent("UAvatar");
+      return h(
+        UAvatarGroup,
+        { max: 3, size: "sm" },
+        () =>
+          row.original.assignedTo &&
+          row.original.assignedTo.map((userId) => {
+            const userStore = useUsersStore();
+            const user = userStore.users.find((u) => u.id === userId);
+            return h(UAvatar, {
+              key: userId,
+              image: "",
+
+              name: user ? user.name : "Unknown",
+              title: user ? user.email : "Unknown",
+            });
+          })
+      );
+    },
+  },
+  {
+    header: "_",
+    // Pinned Icon
+    cell: ({ row }) => {
+      const isPinned = row.original.isPinned;
+      return h(
+        "div",
+        {
+          class: "flex items-center justify-center",
+        },
+        [
+          h(
+            "span",
+            {
+              class: "material-icons",
+              style: { color: isPinned ? "gold" : "gray" },
+            },
+            isPinned ? "Pinned" : ""
+          ),
+        ]
+      );
+    },
+  },
   // For actions like delete and edit
   {
     id: "actions",
@@ -537,7 +600,7 @@ const projectStore = useProjectsStore();
 
 // Extractions from store
 const { fetchUsers } = userStore;
-const { fetchProjects } = projectStore;
+const { fetchProjects, anonymousFetchProjects } = projectStore;
 const { users, loading: usersLoading } = storeToRefs(userStore);
 const {
   projects,
@@ -558,6 +621,7 @@ const projectData: ProjectType = reactive({
   description: "",
   estimatedHours: 0,
   timeStatus: 0,
+  isPinned: false,
   createdBy: authStore.user.id || "",
   assignedTo: [],
   color: getRandomColor(),
@@ -588,6 +652,15 @@ function getRowItems(row: Row<ProjectType>) {
           );
         }
         booleans.isEditProjectSlideOverOpen = true;
+      },
+    },
+    {
+      label: row.original.isPinned ? "Unpin Project" : "Pin Project",
+      onSelect() {
+        pinProjectUpdate(
+          row.original.isPinned ? false : true,
+          row.original.id!
+        );
       },
     },
     {
@@ -688,6 +761,26 @@ const deleteProject = async (id: string) => {
     }
   } catch (error) {
     console.error("Error deleting project:", error);
+  }
+};
+
+const pinProjectUpdate = async (pin: boolean, projectId: string) => {
+  try {
+    // First pin the project
+    projects.value = projects.value.map((project) =>
+      project.id === projectId ? { ...project, isPinned: pin } : project
+    );
+    const response = await updatePinProject(pin, projectId);
+    if (response.statusCode === 200) {
+      await anonymousFetchProjects();
+    } else {
+      toast.add({
+        color: "error",
+        title: response.message || "Failed to update project pin status",
+      });
+    }
+  } catch (error) {
+    console.error("Error updating project pin status:", error);
   }
 };
 

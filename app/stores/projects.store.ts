@@ -21,11 +21,23 @@ export const useProjectsStore = defineStore("projects", () => {
       loading.value = false;
     }
   }
-
+  async function anonymousFetchProjects() {
+    try {
+      const response = await getAllMyProjects();
+      if (response.statusCode == 200) {
+        projects.value = response.projects;
+      } else {
+        errorMessage.value = response.message || "Failed to fetch projects";
+      }
+    } catch (error) {
+      errorMessage.value = "Failed to fetch projects";
+    }
+  }
   return {
     projects,
     errorMessage,
     loading,
     fetchProjects,
+    anonymousFetchProjects,
   };
 });

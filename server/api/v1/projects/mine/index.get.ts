@@ -1,36 +1,37 @@
 import { prisma } from "~~/server/db";
+import { projectService } from "~~/server/services/project.services";
 
 export default defineEventHandler(async (event) => {
-  
-  // Get user id from query
-  const query = getQuery(event);
-  const userId = query.userId;
+  // Get user id from context
+  const userId = event.context.user.id;
+
   if (!userId) {
     return createError({
       statusCode: 400,
       statusMessage: "User ID is required",
-      message: "User ID is required"
+      message: "User ID is required",
     });
   }
 
-  const projects = await prisma.project.findMany({
-    where: { createdBy: userId as string },
-    include: {
-      assignments: {
-        include: {
-          user: {
-            select: { id: true, name: true, email: true },
-          },
-        },
-      },
-      creator: true,
-    },
-  });
+  const pinnedProjects = await projectService.getPinnedProjectsByUserId(
+    userId as string
+  );
+  const unpinnedProjects = await projectService.getUnpinnedProjectsByUserId(
+    userId as string
+  );
 
-  const projectsWithAssignments = projects.map((project) => ({
+  const pinnedWithAssignments = pinnedProjects.map((project) => ({
     ...project,
     assignedTo: project.assignments.map((a) => a.userId),
   }));
 
-  return { statusCode: 200, projects: projectsWithAssignments };
+  const unpinnedWithAssignments = unpinnedProjects.map((project) => ({
+    ...project,
+    assignedTo: project.assignments.map((a) => a.userId),
+  }));
+
+  return {
+    statusCode: 200,
+    projects: [...pinnedWithAssignments, ...unpinnedWithAssignments],
+  };
 });
