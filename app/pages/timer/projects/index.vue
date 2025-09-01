@@ -111,7 +111,9 @@ const columns: TableColumn<ProjectType>[] = [
     header: "Time Status",
     cell: ({ row }) => {
       const timeStatus = row.original.timeStatus;
-      return timeStatus ? `${timeStatus} h` : "0 h";
+      // Limit the decimal to .00
+      const formattedTimeStatus = timeStatus.toFixed(2);
+      return timeStatus ? `${formattedTimeStatus} h` : "0 h";
     },
   },
   {

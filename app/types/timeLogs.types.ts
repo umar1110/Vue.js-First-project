@@ -1,4 +1,3 @@
-import type { UserType } from "./auth.types";
 
 export interface TimeLogsType {
   id?: string;
@@ -10,4 +9,13 @@ export interface TimeLogsType {
   user?: {
     name: string;
   };
+  project?:{
+    id: string;
+    name: string;
+    color: string;
+  },
+  task?: {
+    id: string;
+    title: string;
+  }
 }

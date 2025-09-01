@@ -1,9 +1,8 @@
 import { timeLogsServices } from "~~/server/services/timelogs.services";
 
 export default defineEventHandler(async (event) => {
-  const query = getQuery(event);
-  const projectId = query.projectId as string;
-  const timeLogs = await timeLogsServices.getTimeLogsByProjectId(projectId);
+  const userId = event.context.user.id;
+  const timeLogs = await timeLogsServices.getTimeLogsByUserId(userId);
 
   // Grouping by datess
   const grouped = timeLogs.reduce<Record<string, (typeof timeLogs)[0][]>>(

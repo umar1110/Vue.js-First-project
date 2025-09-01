@@ -23,7 +23,13 @@ export const timeLogsServices = {
     status: "STOPPED", // Will extend for pause resume
     description: string
   ) => {
-    const timeLog = await prisma.timeLog.findUnique({ where: { id } });
+    const timeLog = await prisma.timeLog.findUnique({
+      where: { id },
+      include: {
+        project: { select: { id: true, name: true } },
+        task: { select: { id: true, title: true } },
+      },
+    });
     if (!timeLog) {
       throw new Error("Time log not found");
     }
@@ -39,6 +45,20 @@ export const timeLogsServices = {
           description,
           endTime: new Date(),
           durationSec: Math.floor((Date.now() - startTime.getTime()) / 1000),
+        },
+        include: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          task: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
         },
       });
     }
@@ -111,6 +131,21 @@ export const timeLogsServices = {
         userId,
         status: "RUNNING",
       },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
     });
   },
   createEmptyTimeLog: async (userId: string, description?: string) => {
@@ -126,6 +161,49 @@ export const timeLogsServices = {
     return prisma.timeLog.update({
       where: { id: timeLog.id },
       data: timeLog,
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+  },
+  getTimeLogsByUserId: async (userId: string) => {
+    return prisma.timeLog.findMany({
+      where: {
+        userId,
+        NOT: {
+          status: "RUNNING",
+        },
+      },
+      orderBy: {
+        startTime: "desc",
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
     });
   },
 };

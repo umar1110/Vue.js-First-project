@@ -108,4 +108,35 @@ export const projectService = {
       },
     });
   },
+  async addTimeInProject(projectId: string, time: number) {
+    // time in hours
+    return prisma.project.update({
+      where: { id: projectId },
+      data: {
+        timeStatus: {
+          increment: time,
+        },
+      },
+    });
+  },
+  async getAssignedProjectsWithTasks(userId: string) {
+    return prisma.project.findMany({
+      where: {
+        assignments: {
+          some: {
+            userId,
+          },
+        },
+      },
+      select: {
+        tasks: {
+          where: { assignees: { some: { userId } } },
+          select: { id: true, title: true },
+        },
+        id: true,
+        name: true,
+        color: true,
+      },
+    });
+  },
 };

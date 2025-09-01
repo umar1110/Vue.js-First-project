@@ -1,16 +1,11 @@
 import { timeLogsServices } from "~~/server/services/timelogs.services";
 
 export default eventHandler(async (event) => {
-  const query = getQuery(event);
-  const projectId = query.projectId as string;
   const user = event.context.user;
-  const timeLog = await timeLogsServices.isAlreadyRunningTaskByUser(
-    user.id,
-    projectId
-  );
+  const timeLog = await timeLogsServices.alreadyRunningTaskTimeLog(user.id);
 
   if (!timeLog) {
-    return {
+    throw {
       statusCode: 404,
       message: "No running time log found",
     };

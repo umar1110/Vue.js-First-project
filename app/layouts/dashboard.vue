@@ -44,6 +44,7 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 
 const menu = [
+  { name: "Timer", routes: ["/timer"] },
   { name: "My Projects", routes: ["/timer/projects", "/timer/projects/:id"] },
   {
     name: "Assigned Projects",

@@ -1,12 +1,13 @@
 const routes = {
   api: {
     project: {
-      index:"/api/v1/projects",
+      index: "/api/v1/projects",
       mine: {
         index: "/api/v1/projects/mine",
       },
       assigned: {
         index: "/api/v1/projects/assigned",
+        withTasks: "/api/v1/projects/assigned/withtasks",
       },
       tasks: {
         index: "/api/v1/projects/task",
@@ -18,6 +19,7 @@ const routes = {
     },
     timeLogs: {
       index: "api/v1/timelogs",
+      new: "/api/v1/timelogs/new",
       isRunning: "/api/v1/timelogs/running",
       changeStatus: "/api/v1/timelogs/status",
     },

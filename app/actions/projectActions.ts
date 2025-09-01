@@ -103,29 +103,15 @@ export const updatePinProject = async (pin: boolean, projectId: string) => {
   }
 };
 
-export const getAllProjectTasks = async (projectId: string) => {
+export const getAssignedProjectsWithTasksAction = async () => {
   try {
     const { $axios } = useNuxtApp();
     const response = await $axios.get(
-      `${routes.api.project.tasks.all}?projectId=${projectId}`
+      `${routes.api.project.assigned.withTasks}`
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching project tasks:", error);
-    return error;
-  }
-};
-
-export const addNewTaskAction = async (task: TaskType) => {
-  try {
-    const { $axios } = useNuxtApp();
-    const response = await $axios.post(
-      `${routes.api.project.tasks.index}`,
-      task
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error adding new task:", error);
+    console.error("Error fetching assigned projects with tasks:", error);
     return error;
   }
 };

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
-import { getAllProjectTasks, getProjectById } from "~/actions/projectActions";
+import {  getProjectById } from "~/actions/projectActions";
+import { getAllProjectTasks } from "~/actions/taskActions";
 import type { ProjectType, TaskType } from "~/types/project.types";
 
 export const useProjectDetailsStore = defineStore("projectDetails", () => {
@@ -10,8 +11,8 @@ export const useProjectDetailsStore = defineStore("projectDetails", () => {
   const errorMessage = ref<string | null>(null);
   const loading = ref<boolean>(true);
   const tasksLoading = ref<boolean>(false);
-  const fetchProjectDetails = async (id: string) => {
-    if (id == projectId.value && projectDetails.value) return;
+  const fetchProjectDetails = async (id: string, force?: boolean) => {
+    if (id == projectId.value && projectDetails.value && !force) return;
     loading.value = true;
     projectId.value = id;
     try {
@@ -29,8 +30,8 @@ export const useProjectDetailsStore = defineStore("projectDetails", () => {
       loading.value = false;
     }
   };
-  const fetchProjectTasks = async (id: string) => {
-    if (projectTasks.value && tasksFor.value === id) return;
+  const fetchProjectTasks = async (id: string, force?: boolean) => {
+    if (projectTasks.value && tasksFor.value === id && !force) return;
     tasksLoading.value = true;
     projectId.value = id;
     tasksFor.value = id;

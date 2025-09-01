@@ -9,7 +9,6 @@ export default eventHandler(async (event) => {
     estimatedHours: number;
     assignees: string[];
   } = await readBody(event);
-
   const project = await projectService.getProjectById(body.projectId);
 
   if (!project) {
