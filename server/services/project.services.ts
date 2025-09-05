@@ -5,6 +5,7 @@ export const projectService = {
     projectId: string,
     data: {
       name?: string;
+      color?: string;
       description?: string;
       createdBy?: string;
       estimatedHours?: number;
@@ -20,6 +21,7 @@ export const projectService = {
         ...(data.estimatedHours && { estimatedHours: data.estimatedHours }),
         ...(data.isPinned != undefined && { isPinned: data.isPinned }),
         ...(data.createdBy && { creator: { connect: { id: data.createdBy } } }),
+        ...(data.color && { color: data.color }),
         ...(data.assignedTo && {
           assignments: {
             deleteMany: {},

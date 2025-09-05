@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
     description?: string;
     createdBy?: string;
     estimatedHours?: number;
+    color?: string;
     assignedTo?: string[];
   } = await readBody(event);
 

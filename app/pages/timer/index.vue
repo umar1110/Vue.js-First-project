@@ -395,7 +395,7 @@ onUnmounted(() => {
                   <p class="font-semibold">
                     {{ log.description || "No description" }}
                   </p>
-                  <p>
+                  <p v-if="log.project" >
                     <span class="text-gray-400">Project: </span>
                     <span
                       v-if="log.task"
